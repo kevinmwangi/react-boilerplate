@@ -1,7 +1,8 @@
 /* eslint no-underscore-dangle: ["error", { "allow": ["_id", "_creator"] }] */
 
 import dateFormat from 'dateformat';
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import browserHistory from 'react-router/lib/browserHistory';
@@ -16,6 +17,8 @@ import Confirm from '../../components/Confirm';
 import Helmet from '../../components/Helmet';
 import Indicator from '../../components/Indicator';
 import { fetchDetail, remove } from '../../state/actions/board';
+
+const toggleConfirmation = isShow => () => ({ showConfirmation: isShow });
 
 class BoardView extends React.Component {
   static propTypes = {
@@ -75,11 +78,11 @@ class BoardView extends React.Component {
   }
 
   handleShowConfirmation() {
-    this.setState({ showConfirmation: true });
+    this.setState(toggleConfirmation(true));
   }
 
   handleHideConfirmation() {
-    this.setState({ showConfirmation: false });
+    this.setState(toggleConfirmation(false));
   }
 
   render() {

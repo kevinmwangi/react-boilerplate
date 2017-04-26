@@ -3,7 +3,7 @@ const ManifestPlugin = require('webpack-manifest-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 const processEnv = require('../../utils/processEnv');
-const paths = require('./../paths');
+const paths = require('../paths');
 
 const debug = process.env.NODE_ENV === 'development';
 
@@ -13,6 +13,31 @@ const envs = processEnv({
   NODE_ENV: process.env.NODE_ENV,
   API_URL: process.env.API_URL,
 });
+
+const cssLoaders = [
+  {
+    loader: 'css-loader',
+    options: {
+      importLoaders: 1,
+    },
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
+      plugins: () => [
+        autoprefixer({
+          browsers: [
+            '>1%',
+            'last 4 versions',
+            'Firefox ESR',
+            'not ie < 9', // React doesn't support IE8 anyway
+          ],
+        }),
+      ],
+    },
+  },
+];
 
 const config = {
   entry: [
@@ -24,28 +49,20 @@ const config = {
     publicPath: '/',
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
-  },
-  resolveLoader: {
-    modules: [paths.ownNodeModules],
-    moduleExtensions: ['-loader'],
+    extensions: ['.js', '.jsx', '.json'],
   },
   module: {
-    loaders: [
+    rules: [
       {
         enforce: 'pre',
         test: /\.(js|jsx)$/,
-        loader: 'eslint',
+        loader: 'eslint-loader',
         include: paths.src,
       },
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel',
+        loader: 'babel-loader',
         include: paths.src,
-      },
-      {
-        test: /\.json$/,
-        loader: 'json',
       },
       {
         exclude: [
@@ -53,18 +70,21 @@ const config = {
           /\.(js|jsx)$/,
           /\.css$/,
           /\.json$/,
-          /\.svg$/,
+          /\.bmp$/,
+          /\.gif$/,
+          /\.jpe?g$/,
+          /\.png$/,
         ],
-        loader: 'url',
-        query: {
-          limit: 10000,
+        loader: 'file-loader',
+        options: {
           name: 'static/media/[name].[hash:8].[ext]',
         },
       },
       {
-        test: /\.svg$/,
-        loader: 'file',
-        query: {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
           name: 'static/media/[name].[hash:8].[ext]',
         },
       },
@@ -96,32 +116,23 @@ if (debug) {
     publicPath: `http://${host}:${process.env.DEV_PORT}/`,
   });
 
-  config.module.loaders.push({
-    test: /\.css$/,
+  config.module.rules.unshift({
+    test: /\.(js|jsx)$/,
+    loader: 'react-hot-loader/webpack',
     include: paths.src,
-    loader: 'style!css!postcss',
+  });
+
+  config.module.rules.push({
+    test: /\.css$/,
+    use: [
+      'style-loader',
+      ...cssLoaders,
+    ],
   });
 
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   config.plugins.push(new webpack.NoEmitOnErrorsPlugin());
   config.plugins.push(new webpack.NamedModulesPlugin());
-  config.plugins.push(new webpack.LoaderOptionsPlugin({
-    options: {
-      debug: true,
-      postcss: {
-        plugins: [
-          autoprefixer({
-            browsers: [
-              '>1%',
-              'last 4 versions',
-              'Firefox ESR',
-              'not ie < 9', // React doesn't support IE8 anyway
-            ],
-          }),
-        ],
-      },
-    },
-  }));
 }
 
 // Production config
@@ -134,11 +145,11 @@ if (!debug) {
     chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
   });
 
-  config.module.loaders.push({
+  config.module.rules.push({
     test: /\.css$/,
-    loader: ExtractTextPlugin.extract({
-      fallbackLoader: 'style',
-      loader: 'css?-autoprefixer!postcss',
+    use: ExtractTextPlugin.extract({
+      fallback: 'style-loader',
+      use: cssLoaders,
     }),
   });
 

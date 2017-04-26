@@ -36,34 +36,25 @@ const config = {
     libraryTarget: 'commonjs',
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
-  },
-  resolveLoader: {
-    modules: [paths.ownNodeModules],
-    moduleExtensions: ['-loader'],
+    extensions: ['.js', '.jsx', '.json'],
   },
   externals: [nodeExternals()],
   module: {
-    loaders: [
+    rules: [
       {
         enforce: 'pre',
         test: /\.(js|jsx)$/,
-        loader: 'eslint',
+        loader: 'eslint-loader',
         include: paths.src,
       },
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel',
+        loader: 'babel-loader',
         include: paths.src,
-      },
-      {
-        test: /\.json$/,
-        loader: 'json',
       },
       {
         test: /\.css$/,
-        loader: 'css/locals',
-        include: paths.src,
+        loader: 'css-loader/locals',
       },
       {
         exclude: [
@@ -71,19 +62,22 @@ const config = {
           /\.(js|jsx)$/,
           /\.css$/,
           /\.json$/,
-          /\.svg$/,
+          /\.bmp$/,
+          /\.gif$/,
+          /\.jpe?g$/,
+          /\.png$/,
         ],
-        loader: 'url',
-        query: {
-          limit: 10000,
+        loader: 'file-loader',
+        options: {
           name: 'static/media/[name].[hash:8].[ext]',
           emitFile: false,
         },
       },
       {
-        test: /\.svg$/,
-        loader: 'file',
-        query: {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
           name: 'static/media/[name].[hash:8].[ext]',
           emitFile: false,
         },
@@ -98,11 +92,6 @@ const config = {
   plugins: [
     new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
     new webpack.DefinePlugin(envs),
-    new webpack.LoaderOptionsPlugin({
-      options: {
-        debug: true,
-      },
-    }),
   ],
 };
 

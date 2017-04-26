@@ -1,5 +1,9 @@
 {
-  "presets": [ "latest", "react" ],
+  "presets": [
+    "env",
+    "stage-2",
+    "react"
+  ],
   "plugins": [
     "syntax-trailing-function-commas",
     "transform-class-properties",
@@ -7,9 +11,6 @@
     "transform-runtime"
   ],
   "env": {
-    "development": {
-      "plugins": [ "react-hot-loader/babel" ]
-    },
     "production": {
       "plugins": [ "transform-react-constant-elements" ]
     }

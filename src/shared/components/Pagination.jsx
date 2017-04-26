@@ -1,23 +1,18 @@
-import React, { PropTypes } from 'react';
+// @flow
+
+import React from 'react';
 import RBPagination from 'react-bootstrap/lib/Pagination';
 
-export default class Pagination extends React.Component {
-  static propTypes = {
-    pages: PropTypes.number,
-    page: PropTypes.number,
-    onSelect: PropTypes.func,
-  };
+type Props = {
+  pages?: number,
+  page?: number,
+  onSelect?: (page: number) => void,
+};
 
-  static defaultProps = {
-    pages: null,
-    page: null,
-    onSelect: () => {},
-  };
-
-  render() {
-    const { pages, page, onSelect } = this.props;
-
-    return (!pages && !page) ? null : <RBPagination
+const Pagination = ({ pages, page, onSelect }: Props) => !pages && !page
+  ? null
+  : (
+    <RBPagination
       items={pages}
       activePage={page}
       onSelect={onSelect}
@@ -26,6 +21,13 @@ export default class Pagination extends React.Component {
       last
       prev
       next
-    />;
-  }
-}
+    />
+  );
+
+Pagination.defaultProps = {
+  pages: null,
+  page: null,
+  onSelect: () => {},
+};
+
+export default Pagination;
